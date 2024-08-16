@@ -16,7 +16,7 @@ type Todo struct {
 
 // View implements tea.Model.
 func (t Todo) View() string {
-	s := "TODO\n"
+	s := "TODO:\n"
 
 	for i, item := range t.items {
 		cursor := " "
