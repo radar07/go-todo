@@ -51,6 +51,7 @@ func (t Todo) Init() tea.Cmd {
 }
 
 func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	cmd := tea.EnterAltScreen
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -59,14 +60,20 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return t, tea.Quit
 
 		case "k", "up":
+			cmd = tea.ClearScreen
 			if t.cursor > 0 {
 				t.cursor--
 			}
 		case "j", "down":
+			cmd = tea.ClearScreen
 			if t.cursor < len(t.items)-1 {
 				t.cursor++
 			}
 		case "n":
+			panic("unimplemented!")
+		case "u":
+			fmt.Println(t.cursor)
+		case "d":
 			panic("unimplemented!")
 		case "enter", " ":
 			_, ok := t.selected[t.cursor]
@@ -78,16 +85,15 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return t, nil
+	return t, cmd
 }
 
 func main() {
+	SeedFile()
 	p := tea.NewProgram(InitialModel())
 	_, err := p.Run()
 
 	if err != nil {
 		os.Exit(1)
 	}
-
-	SeedFile()
 }
