@@ -7,14 +7,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// App state
+type Item struct {
+	Name string `json:"name"`
+}
+
 type Todo struct {
-	items    []string
+	items    []Item
 	cursor   int
 	selected map[int]struct{}
 }
 
-// View implements tea.Model.
 func (t Todo) View() string {
 	s := "TODO:\n"
 
@@ -29,21 +31,21 @@ func (t Todo) View() string {
 			checked = "x"
 		}
 
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, item)
+		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, item.Name)
 	}
 
-	s += "\nPress 'Q' to quit!"
+	s += "\n('q' - quit)"
 	return s
 }
 
-func initialModel() Todo {
+func InitialModel() Todo {
+	items := GetItemsFromFile()
 	return Todo{
-		items:    []string{"Learn Go", "Use Github APIs"},
+		items:    items,
 		selected: make(map[int]struct{}),
 	}
 }
 
-// Kick-off the event loop
 func (t Todo) Init() tea.Cmd {
 	return nil
 }
@@ -64,6 +66,8 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if t.cursor < len(t.items)-1 {
 				t.cursor++
 			}
+		case "n":
+			panic("unimplemented!")
 		case "enter", " ":
 			_, ok := t.selected[t.cursor]
 			if ok {
@@ -78,8 +82,12 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func main() {
-	p := tea.NewProgram(initialModel())
-	if _, err := p.Run(); err != nil {
+	p := tea.NewProgram(InitialModel())
+	_, err := p.Run()
+
+	if err != nil {
 		os.Exit(1)
 	}
+
+	SeedFile()
 }
