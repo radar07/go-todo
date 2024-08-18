@@ -3,9 +3,26 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	textinput "github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	cursorStyle         = focusedStyle
+	noStyle             = lipgloss.NewStyle()
+	helpStyle           = blurredStyle
+	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+	promptStyle         = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("#FAFAFA")).
+				Background(lipgloss.Color("#7D56F4"))
+	// focusedButton = focusedStyle.Render("[ Submit ]")
+	// blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
 type Item struct {
@@ -21,7 +38,8 @@ type Todo struct {
 }
 
 func (t Todo) View() string {
-	s := "TODO:\n"
+	var s strings.Builder
+	s.WriteString("\nTODO:\n")
 
 	for i, item := range t.items {
 		cursor := " "
@@ -34,19 +52,24 @@ func (t Todo) View() string {
 			checked = "󰄬"
 		}
 
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, item.Name)
+		s.WriteString(fmt.Sprintf("%s [%s] %s\n", cursor, checked, item.Name))
 	}
 
-	s += fmt.Sprintf("\n%s", t.textInput.View())
-	s += "\n('q' - quit)"
-	return s
+	s.WriteString(fmt.Sprintf("\n%s\n", t.textInput.View()))
+	s.WriteString(helpStyle.Render("\n'q' - quit"))
+	s.WriteString(helpStyle.Render("\n'TAB' - switch to prompt"))
+	s.WriteString(helpStyle.Render("\n'u' - update"))
+	s.WriteString(helpStyle.Render("\n'd' - delete"))
+	return s.String()
 }
 
 func InitialModel() Todo {
 	ti := textinput.New()
+	ti.Cursor.Style = cursorStyle
 	ti.Placeholder = "Enter new item: "
 
 	items := GetItemsFromFile()
+
 	return Todo{
 		textInput: ti,
 		items:     items,
@@ -111,10 +134,14 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyTab.String():
 			if t.textInput.Focused() {
+				t.textInput.PromptStyle = noStyle
+				t.textInput.TextStyle = noStyle
 				t.textInput.Reset()
 				t.textInput.Blur()
 			} else {
 				cmd = t.textInput.Focus()
+				t.textInput.PromptStyle = focusedStyle
+				t.textInput.TextStyle = focusedStyle
 			}
 		}
 
