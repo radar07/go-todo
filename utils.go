@@ -57,6 +57,8 @@ func SeedFile() {
 	items := []Item{
 		Item{"Learn Go"},
 		Item{"Play with Ollama LLM"},
+		Item{"Github APIs"},
+		Item{"Dive into frontend"},
 	}
 	bytes, _ := json.Marshal(items)
 	os.WriteFile(file, bytes, 0666)
