@@ -17,6 +17,7 @@ type Todo struct {
 	textInput textinput.Model
 	items     []Item
 	cursor    int
+	changed   bool
 }
 
 func (t Todo) View() string {
@@ -30,7 +31,7 @@ func (t Todo) View() string {
 
 		checked := " "
 		if t.items[i].Completed {
-			checked = "x"
+			checked = "󰄬"
 		}
 
 		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, item.Name)
@@ -58,6 +59,7 @@ func (t Todo) Init() tea.Cmd {
 
 func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -79,17 +81,28 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "u":
+			// FIXME: appends 'u' to the textinput
+			(&t).changed = true
 			if !t.textInput.Focused() {
 				t.textInput.Focus()
 				t.textInput.SetValue(t.items[t.cursor].Name)
+			}
+
+		case "d", tea.KeyDelete.String():
+			if !t.textInput.Focused() {
+				t.items = append(t.items[0:t.cursor], t.items[t.cursor+1:]...)
 			}
 
 		case tea.KeyEnter.String():
 			if t.textInput.Focused() {
 				item := t.textInput.Value()
 				if item != "" {
-					t.items = append(t.items, Item{item, false})
-					t.textInput.Reset()
+					if t.changed {
+						(&t.items[t.cursor]).Name = item
+					} else {
+						t.items = append(t.items, Item{Name: item})
+						t.textInput.Reset()
+					}
 				}
 			} else {
 				isCompleted := t.items[t.cursor].Completed
@@ -112,6 +125,7 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func main() {
+	// SeedFile()
 	p := tea.NewProgram(InitialModel())
 	_, err := p.Run()
 
