@@ -94,11 +94,13 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "k", "up":
+			(&t).changed = false
 			if t.cursor > 0 && !t.textInput.Focused() {
 				t.cursor--
 			}
 
 		case "j", "down":
+			(&t).changed = false
 			if t.cursor < len(t.items)-1 && !t.textInput.Focused() {
 				t.cursor++
 			}
@@ -134,6 +136,7 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case tea.KeyTab.String():
+			(&t).changed = false
 			if t.textInput.Focused() {
 				t.textInput.PromptStyle = noStyle
 				t.textInput.TextStyle = noStyle
