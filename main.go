@@ -63,19 +63,25 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", tea.KeyCtrlC.String():
-			WriteTodos(t.items)
-			return t, tea.Quit
+			if !t.textInput.Focused() {
+				WriteTodos(t.items)
+				return t, tea.Quit
+			}
 
 		case "k", "up":
-			cmd = tea.ClearScreen
 			if t.cursor > 0 && !t.textInput.Focused() {
 				t.cursor--
 			}
 
 		case "j", "down":
-			cmd = tea.ClearScreen
 			if t.cursor < len(t.items)-1 && !t.textInput.Focused() {
 				t.cursor++
+			}
+
+		case "u":
+			if !t.textInput.Focused() {
+				t.textInput.Focus()
+				t.textInput.SetValue(t.items[t.cursor].Name)
 			}
 
 		case tea.KeyEnter.String():
@@ -92,6 +98,7 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyTab.String():
 			if t.textInput.Focused() {
+				t.textInput.Reset()
 				t.textInput.Blur()
 			} else {
 				cmd = t.textInput.Focus()
@@ -105,7 +112,7 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func main() {
-	p := tea.NewProgram(InitialModel(), tea.WithAltScreen())
+	p := tea.NewProgram(InitialModel())
 	_, err := p.Run()
 
 	if err != nil {
