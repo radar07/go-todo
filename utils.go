@@ -55,11 +55,17 @@ func SeedFile() {
 	file := GetTodoFileName()
 
 	items := []Item{
-		Item{"Learn Go"},
-		Item{"Play with Ollama LLM"},
-		Item{"Github APIs"},
-		Item{"Dive into frontend"},
+		Item{"Learn Go", false},
+		Item{"Play with Ollama LLM", false},
+		Item{"Github APIs", false},
+		Item{"Dive into frontend", false},
 	}
+	bytes, _ := json.Marshal(items)
+	os.WriteFile(file, bytes, 0666)
+}
+
+func WriteTodos(items []Item) {
+	file := GetTodoFileName()
 	bytes, _ := json.Marshal(items)
 	os.WriteFile(file, bytes, 0666)
 }
