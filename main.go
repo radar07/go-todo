@@ -122,6 +122,7 @@ func (t Todo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if item != "" {
 					if t.changed {
 						(&t.items[t.cursor]).Name = item
+						(&t).changed = false
 					} else {
 						t.items = append(t.items, Item{Name: item})
 						t.textInput.Reset()
